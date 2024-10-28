@@ -1,6 +1,7 @@
 #include "MeMCore.h"
 #define TURNING_TIME_MS 330
 #define ULTRASONIC 12
+#define LED 13
 #define SPEED_OF_SOUND 340
 #define TIMEOUT 2000
 #define LDRWait 30
@@ -8,46 +9,55 @@
 MeLineFollower lineFinder(PORT_2);
 MeDCMotor leftMotor(M1);
 MeDCMotor rightMotor(M2);
+MeBuzzer buzzer;
+MeRGBLed led(0, 30);
 int status = 0;
-uint8_t motorSpeed = 255;
+uint8_t motorSpeed = 255; // Setting motor speed to an integer between 1 and 255, the larger the number, the faster the speed
 MePort ir_adapter(PORT_3);
 MePort ldr_adapter(PORT_4);
 int A = 1;
-int B = 2;  
+int B = 2;
 int ldrPin = A1;
 float colourArray[] = {0,0,0};
 float whiteArray[] = {0,0,0};
 float blackArray[] = {0,0,0};
 float greyDiff[] = {0,0,0};
+
 void setup()
 {
   pinMode(A7, INPUT);
   Serial.begin(9600);
   setBalance();
+  // MBot LED
+  led.setpin(LED);
 }
+
 void stop(){
   leftMotor.stop();
   rightMotor.stop();
 }
+
 void forward(int speed){
   leftMotor.run(-speed);
   rightMotor.run(speed);
-  delay(500);
+  delay(500); // Keep going straight for 500ms = 0.5s
   stop();
 }
+
 void turn(int side,int angle){
   if(side==0){
     leftMotor.run(motorSpeed);
     rightMotor.run(motorSpeed);
-    delay(angle*3.2);
+    delay(angle * 3.2);
     stop();
   }else if(side==1){
     leftMotor.run(-motorSpeed);
     rightMotor.run(-motorSpeed);
-    delay(angle*3.2);
+    delay(angle * 3.2);
     stop();
   }
 }
+
 double left_distance(){
   pinMode(ULTRASONIC, OUTPUT);
   digitalWrite(ULTRASONIC, LOW);
@@ -57,8 +67,9 @@ double left_distance(){
   digitalWrite(ULTRASONIC, LOW);
   pinMode(ULTRASONIC, INPUT);
   long duration = pulseIn(ULTRASONIC, HIGH, TIMEOUT);
-  return duration / 2.0 / 1000000 * SPEED_OF_SOUND * 100;
+  return duration / 2.0 / 1000000 * SPEED_OF_SOUND * 100; // unit is cm
 }
+
 void Balance(int type){
   ldr_adapter.dWrite1(HIGH);//RED
   ldr_adapter.dWrite2(HIGH);
@@ -82,6 +93,7 @@ void Balance(int type){
   else if(type==2) colourArray[2] = getAvgReading(5);
   delay(RGBWait);
 }
+
 void setBalance(){
   Serial.println("Put White Sample For Calibration ...");
   delay(5000);
@@ -93,6 +105,7 @@ void setBalance(){
   Serial.println("Colour Sensor Is Ready.");
   delay(1000);
 }
+
 int getAvgReading(int times){      
   int reading;
   int total =0;
@@ -103,6 +116,7 @@ int getAvgReading(int times){
   }
   return total/times;
 }
+
 int maxx(){
   int max=0;
   for(int c=1;c<=2;c++){
@@ -112,6 +126,7 @@ int maxx(){
   }
   return max;
 }
+
 int colour(){//0--Blue 1--Green 2--Red 3--Orange 4--Pink
   Balance(2);
   delay(500);
@@ -129,6 +144,31 @@ int colour(){//0--Blue 1--Green 2--Red 3--Orange 4--Pink
     else return 4;
   }
 }
+
+void celebrate(){
+  buzzer.tone(392, 200);
+  buzzer.tone(523, 200);
+  buzzer.tone(659, 200);
+  buzzer.tone(784, 200);
+  buzzer.tone(659, 150);
+  buzzer.tone(784, 400);
+  buzzer.noTone();
+}
+
+void blinkRed(){
+  led.setColor(0, 255, 0, 0);
+  led.setColor(1, 255, 0, 0);
+  led.show();
+  delay(500);
+}
+
+void blinkBlue(){
+  led.setColor(0, 0, 0, 255);
+  led.setColor(1, 0, 0, 255);
+  led.show();
+  delay(500);
+}
+
 void loop()
 {
   /*if (analogRead(A7) < 100) {
@@ -147,9 +187,19 @@ void loop()
     }
     forward(motorSpeed);
   }*/
-  Serial.println("put colout");
+  /*Serial.println("put colout");
   delay(3000);
   int col=colour();
   Serial.println(col);
-  delay(1000);
+  delay(1000);*/
+  
+  // Code to play celebrate sound
+  // celebrate();
+  // delay(1000);
+
+  // Code to turn on MBot LED
+  // blinkRed();
+  // delay(1000);
+  // blinkBlue();
+  // delay(1000);
 }
