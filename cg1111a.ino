@@ -1,10 +1,12 @@
 #include "MeMCore.h"
+#include "InterpolationLib.h"
 #define TURNING_TIME_MS 330
 #define ULTRASONIC 12
 #define LED 13
 #define SPEED_OF_SOUND 340
 #define TIMEOUT 2000
 #define LDRWait 30
+#define IRWait 30
 #define RGBWait 500
 MeLineFollower lineFinder(PORT_2);
 MeDCMotor leftMotor(M1);
@@ -15,19 +17,23 @@ int status = 0;
 uint8_t motorSpeed = 255; // Setting motor speed to an integer between 1 and 255, the larger the number, the faster the speed
 MePort ir_adapter(PORT_3);
 MePort ldr_adapter(PORT_4);
-int A = 1;
-int B = 2;
-int ldrPin = A1;
+// int A = 1;
+// int B = 2;
+// int ldrPin = A1;
 float colourArray[] = {0,0,0};
 float whiteArray[] = {0,0,0};
 float blackArray[] = {0,0,0};
 float greyDiff[] = {0,0,0};
+// Interpolation Table for IR
+const int numValues = 9;
+double xValues[10] = { 720, 685, 655, 620, 590, 580, 550, 537, 500}; // Analog output for IR
+double yValues[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 }; // Distance in cm
 
 void setup()
 {
   pinMode(A7, INPUT);
   Serial.begin(9600);
-  setBalance();
+  // setBalance();
   // MBot LED
   led.setpin(LED);
 }
@@ -74,23 +80,23 @@ void Balance(int type){
   ldr_adapter.dWrite1(HIGH);//RED
   ldr_adapter.dWrite2(HIGH);
   delay(RGBWait);
-  if(type==0) whiteArray[0] = getAvgReading(5);
-  else if(type==1) blackArray[0] = getAvgReading(5);
-  else if(type==2) colourArray[0] = getAvgReading(5);
+  if(type==0) whiteArray[0] = getAvgReadingLDR(5);
+  else if(type==1) blackArray[0] = getAvgReadingLDR(5);
+  else if(type==2) colourArray[0] = getAvgReadingLDR(5);
   
   ldr_adapter.dWrite1(LOW);//Green
   ldr_adapter.dWrite2(HIGH);
   delay(RGBWait);
-  if(type==0) whiteArray[1] = getAvgReading(5);
-  else if(type==1) blackArray[1] = getAvgReading(5);
-  else if(type==2) colourArray[1] = getAvgReading(5);
+  if(type==0) whiteArray[1] = getAvgReadingLDR(5);
+  else if(type==1) blackArray[1] = getAvgReadingLDR(5);
+  else if(type==2) colourArray[1] = getAvgReadingLDR(5);
 
   ldr_adapter.dWrite1(HIGH);//Blue
   ldr_adapter.dWrite2(LOW);
   delay(RGBWait);
-  if(type==0) whiteArray[2] = getAvgReading(5);
-    else if(type==1) blackArray[2] = getAvgReading(5);
-  else if(type==2) colourArray[2] = getAvgReading(5);
+  if(type==0) whiteArray[2] = getAvgReadingLDR(5);
+    else if(type==1) blackArray[2] = getAvgReadingLDR(5);
+  else if(type==2) colourArray[2] = getAvgReadingLDR(5);
   delay(RGBWait);
 }
 
@@ -106,13 +112,25 @@ void setBalance(){
   delay(1000);
 }
 
-int getAvgReading(int times){      
+int getAvgReadingLDR(int times){      
   int reading;
   int total =0;
   for(int i = 0;i < times;i++){
      reading = ir_adapter.aRead2();
      total = reading + total;
      delay(LDRWait);
+  }
+  return total/times;
+}
+
+int getAvgReadingIR(int times){
+  int reading;
+  int total = 0;
+  for (int i = 0; i < times; i++)
+  {
+    reading = ir_adapter.aRead1();
+    total = reading + total;
+    delay(IRWait);
   }
   return total/times;
 }
@@ -169,6 +187,13 @@ void blinkBlue(){
   delay(500);
 }
 
+double getDistanceIR(float x)
+{
+  // The last boolean flag "clamp", true will limit the y output in the range of the known values.
+  double distance = Interpolation::Linear(xValues, yValues, numValues, x, false);
+  return distance;
+}
+
 void loop()
 {
   /*if (analogRead(A7) < 100) {
@@ -197,6 +222,12 @@ void loop()
   // celebrate();
   // delay(1000);
 
+  // IR Reading
+  int ir_reading = getAvgReadingIR(5);
+  double distance = getDistanceIR((float)ir_reading);
+  Serial.print("Distance: ");
+  Serial.println(distance);
+  delay(1000);
   // Code to turn on MBot LED
   // blinkRed();
   // delay(1000);
