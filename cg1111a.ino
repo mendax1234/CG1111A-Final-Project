@@ -167,8 +167,8 @@ int getAvgReadingIR(int times){
 
 int maxx(){//find the three colors with the highest proportion
   int max=0;
-  for(int c = 1; c <= 2; c++){
-    if(colourArray[c] > colourArray[max]){
+  for (int c = 1; c <= 2; c++){
+    if (colourArray[c] > colourArray[max]){
       max=c;
     }
   }
@@ -261,7 +261,7 @@ void loop()
     status = 1 - status;
     delay(500);
   }
-  if(status==1){
+  if (status==1){
     /*int col = colour();
     Serial.println(col);
     delay(1000);*/
@@ -276,13 +276,13 @@ void loop()
     if (sensorState != 3) {//if detect black, stop and detect colour
       stop();
       int col = colour();
-      if(col == 2) {
+      if (col == 2) {
         turn(0,90);
-      } else if(col == 1) {
+      } else if (col == 1) {
         turn(1,90);
-      } else if(col == 3) {
+      } else if (col == 3) {
         turn(1,180);
-      } else if(col == 4) {
+      } else if (col == 4) {
         turn(0,93);
         forward(motorSpeed,650);
         delay(500);
