@@ -225,7 +225,7 @@ int colour(){
   }
 }
 
-int identify_colour() {
+int identifyColour() {
   // 0: Blue, 1: Green, 2: Red, 3: Orange, 4: Pink
   readColor();
   delay(RGBWait);
@@ -380,7 +380,7 @@ void loop()
     if (sensorState != 3) {//if detect black, stop and detect colour
       stop();
       int col = colour();
-      // int col = identify_color();
+      // int col = identifyColour();
       if (col == RED) {
         blinkRed();
         delay(RGBWait);
