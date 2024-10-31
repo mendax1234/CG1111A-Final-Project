@@ -43,7 +43,7 @@ double yValues[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 }; // Distance in cm
 /* Setup function */
 void setup()
 {
-  pinMode(A7, INPUT);//bottom
+  pinMode(A7, INPUT);//button
   Serial.begin(9600);
   /* Calibrate Color Sensor */
   // setBalance();
@@ -361,7 +361,7 @@ void blinkWhite(){
 /* Main function */
 void loop()
 {
-  if (analogRead(A7) < 100) {
+  if (analogRead(A7) < 100) { //Press button
     status = 1 - status;
     delay(500);
   }
