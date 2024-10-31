@@ -11,6 +11,13 @@
 #define LDRWait 30
 #define IRWait 30
 #define RGBWait 500
+#define BLUE 0
+#define GREEN 1
+#define RED 2
+#define ORANGE 3
+#define PINK 4
+#define WHITE 5
+#define PURPLE 6
 
 /* Setup ports */
 MeLineFollower lineFinder(PORT_2);
@@ -24,7 +31,8 @@ MePort ldr_adapter(PORT_4);
 /* Define variables necessary for mBot */
 int status = 0;
 uint8_t motorSpeed = 255; // Setting motor speed to an integer between 1 and 255, the larger the number, the faster the speed
-float colourArray[] = { 0, 0, 0};
+float colourArray[] = { 0, 0, 0 };
+float whiteArray[] = { 0, 0, 0};
 float blackArray[] = { 655.3, 953.7, 582.3 };
 float greyDiff[] = { 279, 52.5, 348.7 };
 // Interpolation Table for IR
@@ -37,17 +45,18 @@ void setup()
 {
   pinMode(A7, INPUT);//bottom
   Serial.begin(9600);
-  // // setBalance();
+  /* Calibrate Color Sensor */
+  // setBalance();
   // for(int i=0;i<3;i+=1){
   //   Serial.print(greyDiff[i]);
   //   Serial.print(" ");
   //   Serial.println(blackArray[i]);
   // }
-  // MBot LED
+  // Setup mBot LED
   led.setpin(LED);
 }
 
-/* Useful functions */
+/* Moving functions */
 void stop(){
   leftMotor.stop();
   rightMotor.stop();
@@ -61,7 +70,7 @@ void forward(int speed,int time){//more forward
 }
 
 void turn(int side,int angle){//0--turn left, 1--turn right
-  if (side==0) {
+  if (side == 0) {
     leftMotor.run(motorSpeed);
     rightMotor.run(motorSpeed);
     delay(angle * 3.2);
@@ -90,7 +99,9 @@ void turn_deg(int side, int angle) {
   }
 }
 
-double left_distance(){//ultrasonic sensor
+/* Ultrasonic Sensor */
+double left_distance(){
+  // Get distance away from the left board (Ultrasonic Sensor)
   pinMode(ULTRASONIC, OUTPUT);
   digitalWrite(ULTRASONIC, LOW);
   delayMicroseconds(2);
@@ -105,43 +116,157 @@ double left_distance(){//ultrasonic sensor
   return -1;
 }
 
-void Balance(int type){//read colour
-  ldr_adapter.dWrite1(HIGH);//RED
+/* Color Sensor - Setup */
+void Balance(int type){
+  // 0: For White, 1: Black
+  // Turn ON RED LED
+  ldr_adapter.dWrite1(HIGH);
   ldr_adapter.dWrite2(HIGH);
   delay(RGBWait);
-  // if(type==0) whiteArray[0] = getAvgReadingLDR(5);
-  // else if(type==1) blackArray[0] = getAvgReadingLDR(5);
-  colourArray[0] = getAvgReadingLDR(5);
+  if (type == 0) {
+    whiteArray[0] = getAvgReadingLDR(5);
+  } else if (type == 1) {
+    blackArray[0] = getAvgReadingLDR(5);
+  }
   
-  ldr_adapter.dWrite1(LOW);//Green
+  // Turn ON GREEN LED
+  ldr_adapter.dWrite1(LOW);
   ldr_adapter.dWrite2(HIGH);
   delay(RGBWait);
-  // if(type==0) whiteArray[1] = getAvgReadingLDR(5);
-  // else if(type==1) blackArray[1] = getAvgReadingLDR(5);
-  colourArray[1] = getAvgReadingLDR(5);
+  if (type == 0) {
+    whiteArray[1] = getAvgReadingLDR(5);
+  } else if (type == 1) {
+    blackArray[1] = getAvgReadingLDR(5);
+  }
 
-  ldr_adapter.dWrite1(HIGH);//Blue
+  // Turn ON BLUE LED
+  ldr_adapter.dWrite1(HIGH);
   ldr_adapter.dWrite2(LOW);
   delay(RGBWait);
-  // if(type==0) whiteArray[2] = getAvgReadingLDR(5);
-  //   else if(type==1) blackArray[2] = getAvgReadingLDR(5);
-  colourArray[2] = getAvgReadingLDR(5);
+  if (type == 0) {
+    whiteArray[2] = getAvgReadingLDR(5);
+  } else if(type == 1) {
+    blackArray[2] = getAvgReadingLDR(5);
+  }
   delay(RGBWait);
 }
 
-/*
 void setBalance(){
+  // Calibration: To get whiteArray, blackArray and greyDiff
   Serial.println("Put White Sample For Calibration ...");
   delay(5000);
   Balance(0);
   Serial.println("Put Black Sample For Calibration ...");
   delay(5000);
   Balance(1);
-  for(int i = 0;i<=2;i++) greyDiff[i] = whiteArray[i] - blackArray[i];
+  for(int i = 0; i <= 2; i++) {
+    greyDiff[i] = whiteArray[i] - blackArray[i];
+  }
   Serial.println("Colour Sensor Is Ready.");
   delay(1000);
 }
-*/
+
+/* Color Sensor - Read */
+void readColor(){
+  // Turn ON RED LED
+  ldr_adapter.dWrite1(HIGH);
+  ldr_adapter.dWrite2(HIGH);
+  delay(RGBWait);
+  colourArray[0] = getAvgReadingLDR(5);
+  
+  // Turn ON GREEN LED
+  ldr_adapter.dWrite1(LOW);//Green
+  ldr_adapter.dWrite2(HIGH);
+  delay(RGBWait);
+  colourArray[1] = getAvgReadingLDR(5);
+
+  // Turn ON BLUE LED
+  ldr_adapter.dWrite1(HIGH);//Blue
+  ldr_adapter.dWrite2(LOW);
+  delay(RGBWait);
+  colourArray[2] = getAvgReadingLDR(5);
+
+  delay(RGBWait);
+}
+
+int maxx(){
+  // Find the three colors with the highest proportion
+  int max = 0;
+  for (int c = 1; c <= 2; c++){
+    if (colourArray[c] > colourArray[max]){
+      max = c;
+    }
+  }
+  return max;
+}
+
+int colour(){
+  // 0: Blue, 1: Green, 2: Red, 3: Orange, 4: Pink
+  readColor();
+  delay(RGBWait);
+  // Map the color measured within range
+  for (int c = 0; c <= 2; c++) {
+    colourArray[c] = (colourArray[c] - blackArray[c]) / greyDiff[c] * 255;
+  }
+  // Detect color
+  int maxColor = maxx();
+  if (maxColor == 2) {
+    return BLUE;
+  } else if(maxColor == 1) {
+    return GREEN;
+  } else {
+    if (colourArray[1] < 130 && colourArray[2] < 130) {
+      return RED;
+    } else if (colourArray[1] < 200 || colourArray[2] < 200) {
+      return ORANGE;
+    } else {
+      return PINK;
+    }
+  }
+}
+
+int identify_colour() {
+  // 0: Blue, 1: Green, 2: Red, 3: Orange, 4: Pink
+  readColor();
+  delay(RGBWait);
+  // Map the color measured within range
+  for (int c = 0; c <= 2; c++) {
+    colourArray[c] = (colourArray[c] - blackArray[c]) / greyDiff[c] * 255;
+  }
+
+  int red = colourArray[0];
+  int green = colourArray[1];
+  int blue = colourArray[2];
+
+  if (red > 199) {
+    if (green > 200) {
+      if (blue > 200) {
+        //        Serial.println("white");
+        return WHITE;
+      }
+    }
+    if (green < 150) {
+      //      Serial.println("red");
+      return RED;
+    }
+    if (green > 130) {
+      //      Serial.println("orange");
+      return ORANGE;
+    }
+  }
+  if (blue > 220) {
+    //    Serial.println("blue");
+    return BLUE;
+  }
+  if (blue < 130) {
+    //    Serial.println("green");
+    return GREEN;
+  }
+  if (blue > 70) {
+    //    Serial.println("purple");
+    return PURPLE;
+  }
+}
 
 int getAvgReadingLDR(int times){      
   int reading;
@@ -154,6 +279,7 @@ int getAvgReadingLDR(int times){
   return total / times;
 }
 
+/* IR Sensor */
 int getAvgReadingIR(int times){
   int reading;
   int total = 0;
@@ -165,38 +291,14 @@ int getAvgReadingIR(int times){
   return total / times;
 }
 
-int maxx(){//find the three colors with the highest proportion
-  int max=0;
-  for (int c = 1; c <= 2; c++){
-    if (colourArray[c] > colourArray[max]){
-      max=c;
-    }
-  }
-  return max;
+double getDistanceIR(float x)
+{
+  // The last boolean flag "clamp", true will limit the y output in the range of the known values.
+  double distance = Interpolation::Linear(xValues, yValues, numValues, x, false);
+  return distance;
 }
 
-int colour(){//0--Blue 1--Green 2--Red 3--Orange 4--Pink
-  Balance(2);
-  delay(500);
-  for (int c = 0; c <= 2; c++) {
-    colourArray[c]=(colourArray[c]-blackArray[c])/greyDiff[c]*255;
-  }
-  if (maxx() == 2) {
-    return 0;
-  } else if(maxx() == 1) {
-    return 1;
-  } else {
-    if (colourArray[1] < 130 && colourArray[2] < 130) {
-      return 2;
-    } else if (colourArray[1] < 200 || colourArray[2] < 200) {
-      return 3;
-    } else {
-      return 4;
-    }
-  }
-}
-
-// Play the celebration song when reaching the end
+/* Buzzer */
 void celebrate(){
   buzzer.tone(392, 200);
   buzzer.tone(523, 200);
@@ -207,51 +309,53 @@ void celebrate(){
   buzzer.noTone();
 }
 
-// Blink RED LED on mBot
+/* mBot LED */
 void blinkRed(){
+  // Blink RED LED on mBot
   led.setColor(0, 255, 0, 0);
   led.setColor(1, 255, 0, 0);
   led.show();
-  delay(500);
+  delay(RGBWait);
 }
 
-// Blink GREEN LED on mBot
 void blinkGreen(){
+  // Blink GREEN LED on mBot
   led.setColor(0, 0, 255, 0);
   led.setColor(1, 0, 255, 0);
   led.show();
-  delay(500);
+  delay(RGBWait);
 }
 
-// Blink ORANGE LED on mBot
 void blinkOrange(){
+  // Blink ORANGE LED on mBot
   led.setColor(0, 255, 165, 0);
   led.setColor(1, 255, 165, 0);
   led.show();
-  delay(500);
+  delay(RGBWait);
 }
 
-// Blink PINK LED on mBot
 void blinkPink() {
+  // Blink PINK LED on mBot
   led.setColor(0, 255, 192, 203);
   led.setColor(1, 255, 192, 203);
   led.show();
-  delay(500);
+  delay(RGBWait);
 }
 
-// Blink BLUE LED on mBot
 void blinkBlue(){
+  // Blink BLUE LED on mBot
   led.setColor(0, 0, 0, 255);
   led.setColor(1, 0, 0, 255);
   led.show();
-  delay(500);
+  delay(RGBWait);
 }
 
-double getDistanceIR(float x)
-{
-  // The last boolean flag "clamp", true will limit the y output in the range of the known values.
-  double distance = Interpolation::Linear(xValues, yValues, numValues, x, false);
-  return distance;
+void blinkWhite(){
+  // Blink WHITE LED on mBot
+  led.setColor(0, 255, 255, 255);
+  led.setColor(1, 255, 255, 255);
+  led.show();
+  delay(RGBWait);
 }
 
 /* Main function */
@@ -276,18 +380,33 @@ void loop()
     if (sensorState != 3) {//if detect black, stop and detect colour
       stop();
       int col = colour();
-      if (col == 2) {
+      // int col = identify_color();
+      if (col == RED) {
+        blinkRed();
+        delay(RGBWait);
         turn(0,90);
-      } else if (col == 1) {
+      } else if (col == GREEN) {
+        blinkGreen();
+        delay(RGBWait);
         turn(1,90);
-      } else if (col == 3) {
+      } else if (col == ORANGE) {
+        blinkOrange();
+        delay(RGBWait);
         turn(1,180);
-      } else if (col == 4) {
+      } else if (col == PINK) {
+        blinkPink();
+        delay(RGBWait);
         turn(0,93);
         forward(motorSpeed,650);
         delay(500);
         turn(0,93);
+      } else if (col == WHITE) {
+        blinkWhite();
+        delay(RGBWait);
       } else {
+        // Blue
+        blinkBlue();
+        delay(RGBWait);
         turn(1,93);
         forward(motorSpeed,650);
         delay(500);
