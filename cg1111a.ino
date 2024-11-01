@@ -132,7 +132,7 @@ void turn_right_time() {
   turn_deg(1, 90);
   //delay(duration);
 
-  stop();
+  // stop();
   global_state = FORWARD;
 }
 
@@ -140,7 +140,7 @@ void uturn_time() {
   turn_deg(0, 180);
   // delay(duration);
 
-  stop();
+  // stop();
   global_state = FORWARD;
 }
 
@@ -150,16 +150,16 @@ void compound_turn_left() {
   // delay(TWO_LEFT_TURN_TIME_MS); // purposely tuned to under-turn when turning left for compound to align to more closely to the wall on side of ultrasonic 
 
   // Move forward
-  stop();
+  // stop();
   forward(motorSpeed, STRAIGHT_LEFT_TIME_MS);
   // delay(STRAIGHT_LEFT_TIME_MS);
-  stop();
+  // stop();
 
   // Second turn
   turn_deg(0, 90);
   // delay(TWO_LEFT_TURN_TIME_MS);
 
-  stop();
+  // stop();
   global_state = FORWARD;
 }
 
@@ -169,16 +169,16 @@ void compound_turn_right() {
   // delay(TWO_RIGHT_TURN_TIME_MS); // purposely tuned to under-turn when turning right for compound to align to more closely to the wall on side of ultrasonic
 
   // Move forward
-  stop();
+  // stop();
   forward(motorSpeed, STRAIGHT_RIGHT_TIME_MS);
   // delay(STRAIGHT_RIGHT_TIME_MS);
-  stop();
+  // stop();
   
   // Second turn
   turn_deg(1, 90);
   // delay(TWO_RIGHT_TURN_TIME_MS);
 
-  stop();
+  // stop();
   global_state = FORWARD;
 }
 
