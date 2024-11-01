@@ -201,16 +201,19 @@ double left_distance(){
 
 int within_range() {
   double distance = left_distance();
-  if (distance == 0.0 || distance > 15.0)
-  {
+  if (distance == 0.0 || distance > 15.0) {
+    // No wall
     return 0;
   }
   if (distance < 7) {
+    // Too close
     return -10;
   }
   else if (distance > 13) {
+    // Too far
     return 10;
   }
+  // Within Range
   return 0;
 }
 
