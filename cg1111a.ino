@@ -4,6 +4,9 @@
 
 /* Define constants */
 #define TURNING_TIME_MS 330 // The time to turn 90 degrees (Need to be tuned)
+#define TURN_CORRECTION_TIME_MS 50
+#define STRAIGHT_RIGHT_TIME_MS 975
+#define STRAIGHT_LEFT_TIME_MS 1050
 #define ULTRASONIC 12
 #define LED 13
 #define SPEED_OF_SOUND 340
@@ -11,26 +14,22 @@
 #define LDRWait 30
 #define IRWait 30
 #define RGBWait 500
-#define BLUE 0
-#define GREEN 1
-#define RED 2
-#define ORANGE 3
-#define PINK 4
-#define WHITE 5
-#define PURPLE 6
+
+/* Initialisation of color-sensing constants */
+const char R = 0, G = 1, B = 2;
 
 /* Setup ports */
 MeLineFollower lineFinder(PORT_2);
 MeDCMotor leftMotor(M1);
 MeDCMotor rightMotor(M2);
 MeBuzzer buzzer;
-MeRGBLed led(0, 30);
+MeRGBLed RGBled(0, 30);
 MePort ir_adapter(PORT_3);
 MePort ldr_adapter(PORT_4);
 
 /* Define variables necessary for mBot */
 int status = 0;
-uint8_t motorSpeed = 255; // Setting motor speed to an integer between 1 and 255, the larger the number, the faster the speed
+uint8_t motorSpeed = 180;
 float colourArray[] = { 0, 0, 0 };
 float whiteArray[] = { 0, 0, 0};
 float blackArray[] = { 655.3, 953.7, 582.3 };
@@ -39,6 +38,13 @@ float greyDiff[] = { 279, 52.5, 348.7 };
 const int numValues = 9;
 double xValues[10] = { 720, 685, 655, 620, 590, 580, 550, 537, 500 }; // Analog output for IR
 double yValues[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 }; // Distance in cm
+enum Color {  
+  C_BLUE, C_GREEN, C_RED, C_ORANGE, C_PINK, C_WHITE
+};
+enum Motion {
+  TWO_RIGHT, TURN_RIGHT, TURN_LEFT, U_TURN, TWO_LEFT, CHALLENGE, FORWARD, FINISH
+};
+Motion global_state = FORWARD;  // Default state of motion is FORWARD
 
 /* Setup function */
 void setup()
@@ -53,13 +59,14 @@ void setup()
   //   Serial.println(blackArray[i]);
   // }
   // Setup mBot LED
-  led.setpin(LED);
+  RGBled.setpin(LED);
 }
 
-/* Moving functions */
-void stop(){
-  leftMotor.stop();
-  rightMotor.stop();
+/* Navigation functions */
+/* Default motion */
+void move_forward_correction(int correction) {
+  leftMotor.run(-motorSpeed - correction);
+  rightMotor.run(motorSpeed - correction);
 }
 
 void forward(int speed,int time){//more forward
@@ -67,6 +74,11 @@ void forward(int speed,int time){//more forward
   rightMotor.run(speed);
   delay(time); // Keep going straight for 500ms = 0.5s
   stop();
+}
+
+void stop(){
+  leftMotor.stop();
+  rightMotor.stop();
 }
 
 void turn(int side,int angle){//0--turn left, 1--turn right
@@ -99,6 +111,77 @@ void turn_deg(int side, int angle) {
   }
 }
 
+/* Specific turn actions based on color detected */
+void turn_left_time() {
+  // Move forward slightly before turning left to align closer to the wall
+  forward(motorSpeed, TURN_CORRECTION_TIME_MS);
+  // delay(TURN_CORRECTION_TIME_MS);  
+  
+  turn_deg(0, 90);
+  //delay(duration);
+
+  stop();
+  global_state = FORWARD;
+}
+
+void turn_right_time() {
+  // Move forward slightly before turning right to align closer to the wall
+  forward(motorSpeed, TURN_CORRECTION_TIME_MS);
+  // delay(TURN_CORRECTION_TIME_MS);  
+
+  turn_deg(1, 90);
+  //delay(duration);
+
+  stop();
+  global_state = FORWARD;
+}
+
+void uturn_time() {
+  turn_deg(0, 180);
+  // delay(duration);
+
+  stop();
+  global_state = FORWARD;
+}
+
+void compound_turn_left() {
+  // First turn
+  turn_deg(0, 90);
+  // delay(TWO_LEFT_TURN_TIME_MS); // purposely tuned to under-turn when turning left for compound to align to more closely to the wall on side of ultrasonic 
+
+  // Move forward
+  stop();
+  forward(motorSpeed, STRAIGHT_LEFT_TIME_MS);
+  // delay(STRAIGHT_LEFT_TIME_MS);
+  stop();
+
+  // Second turn
+  turn_deg(0, 90);
+  // delay(TWO_LEFT_TURN_TIME_MS);
+
+  stop();
+  global_state = FORWARD;
+}
+
+void compound_turn_right() {
+  // First turn
+  turn_deg(1, 90);
+  // delay(TWO_RIGHT_TURN_TIME_MS); // purposely tuned to under-turn when turning right for compound to align to more closely to the wall on side of ultrasonic
+
+  // Move forward
+  stop();
+  forward(motorSpeed, STRAIGHT_RIGHT_TIME_MS);
+  // delay(STRAIGHT_RIGHT_TIME_MS);
+  stop();
+  
+  // Second turn
+  turn_deg(1, 90);
+  // delay(TWO_RIGHT_TURN_TIME_MS);
+
+  stop();
+  global_state = FORWARD;
+}
+
 /* Ultrasonic Sensor */
 double left_distance(){
   // Get distance away from the left board (Ultrasonic Sensor)
@@ -114,6 +197,17 @@ double left_distance(){
     return duration / 2.0 / 1000000 * SPEED_OF_SOUND * 100; // unit is cm
   }
   return -1;
+}
+
+int within_range() {
+  double distance = left_distance();
+  if (distance < 7) {
+    return -10;
+  }
+  else if (distance > 13) {
+    return 10;
+  }
+  return 0;
 }
 
 /* Color Sensor - Setup */
@@ -211,60 +305,17 @@ int colour(){
   // Detect color
   int maxColor = maxx();
   if (maxColor == 2) {
-    return BLUE;
+    return C_BLUE;
   } else if(maxColor == 1) {
-    return GREEN;
+    return C_GREEN;
   } else {
     if (colourArray[1] < 130 && colourArray[2] < 130) {
-      return RED;
+      return C_RED;
     } else if (colourArray[1] < 200 || colourArray[2] < 200) {
-      return ORANGE;
+      return C_ORANGE;
     } else {
-      return PINK;
+      return C_PINK;
     }
-  }
-}
-
-int identifyColour() {
-  // 0: Blue, 1: Green, 2: Red, 3: Orange, 4: Pink
-  readColor();
-  delay(RGBWait);
-  // Map the color measured within range
-  for (int c = 0; c <= 2; c++) {
-    colourArray[c] = (colourArray[c] - blackArray[c]) / greyDiff[c] * 255;
-  }
-
-  int red = colourArray[0];
-  int green = colourArray[1];
-  int blue = colourArray[2];
-
-  if (red > 199) {
-    if (green > 200) {
-      if (blue > 200) {
-        //        Serial.println("white");
-        return WHITE;
-      }
-    }
-    if (green < 150) {
-      //      Serial.println("red");
-      return RED;
-    }
-    if (green > 130) {
-      //      Serial.println("orange");
-      return ORANGE;
-    }
-  }
-  if (blue > 220) {
-    //    Serial.println("blue");
-    return BLUE;
-  }
-  if (blue < 130) {
-    //    Serial.println("green");
-    return GREEN;
-  }
-  if (blue > 70) {
-    //    Serial.println("purple");
-    return PURPLE;
   }
 }
 
@@ -310,52 +361,25 @@ void celebrate(){
 }
 
 /* mBot LED */
-void blinkRed(){
-  // Blink RED LED on mBot
-  led.setColor(0, 255, 0, 0);
-  led.setColor(1, 255, 0, 0);
-  led.show();
-  delay(RGBWait);
+void display_color(int c) {
+  int ledColors[6][3] = {
+    {0, 0, 255},    // BLUE
+    {0, 255, 0},    // GREEN
+    {255, 0, 0},    // RED
+    {255, 100, 0},  // ORANGE
+    {200, 0, 200},  // PINK
+    {255, 255, 255} // WHITE
+  };
+
+  RGBled.setColor(ledColors[c][R], ledColors[c][G], ledColors[c][B]);
+  RGBled.show();  // Show colours on-board arduino
 }
 
-void blinkGreen(){
-  // Blink GREEN LED on mBot
-  led.setColor(0, 0, 255, 0);
-  led.setColor(1, 0, 255, 0);
-  led.show();
-  delay(RGBWait);
-}
-
-void blinkOrange(){
-  // Blink ORANGE LED on mBot
-  led.setColor(0, 255, 165, 0);
-  led.setColor(1, 255, 165, 0);
-  led.show();
-  delay(RGBWait);
-}
-
-void blinkPink() {
-  // Blink PINK LED on mBot
-  led.setColor(0, 255, 192, 203);
-  led.setColor(1, 255, 192, 203);
-  led.show();
-  delay(RGBWait);
-}
-
-void blinkBlue(){
-  // Blink BLUE LED on mBot
-  led.setColor(0, 0, 0, 255);
-  led.setColor(1, 0, 0, 255);
-  led.show();
-  delay(RGBWait);
-}
-
-void blinkWhite(){
-  // Blink WHITE LED on mBot
-  led.setColor(0, 255, 255, 255);
-  led.setColor(1, 255, 255, 255);
-  led.show();
-  delay(RGBWait);
+/* mBot Line Sensor */
+bool has_reached_waypoint() {
+  /* Check if mBot line sensor has detected black line on the floor */
+  int sensor_state = lineFinder.readSensors();
+  return sensor_state == S1_IN_S2_IN;
 }
 
 /* Main function */
@@ -381,32 +405,21 @@ void loop()
       stop();
       int col = colour();
       // int col = identifyColour();
-      if (col == RED) {
-        blinkRed();
-        delay(RGBWait);
+      if (col == C_RED) {
         turn(0,90);
-      } else if (col == GREEN) {
-        blinkGreen();
-        delay(RGBWait);
+      } else if (col == C_GREEN) {
         turn(1,90);
-      } else if (col == ORANGE) {
-        blinkOrange();
-        delay(RGBWait);
+      } else if (col == C_ORANGE) {
         turn(1,180);
-      } else if (col == PINK) {
-        blinkPink();
-        delay(RGBWait);
+      } else if (col == C_PINK) {
         turn(0,93);
         forward(motorSpeed,650);
         delay(500);
         turn(0,93);
-      } else if (col == WHITE) {
-        blinkWhite();
-        delay(RGBWait);
+      } else if (col == C_WHITE) {
+        celebrate();
       } else {
         // Blue
-        blinkBlue();
-        delay(RGBWait);
         turn(1,93);
         forward(motorSpeed,650);
         delay(500);
@@ -429,4 +442,49 @@ void loop()
   // Serial.print("Distance: ");
   // Serial.println(distance);
   // delay(1000);
+}
+
+void loops()
+{
+  if (analogRead(A7) < 100) {
+    status = 1 - status;
+    delay(500);
+  }
+  if (status == 1){
+    if (global_state == FORWARD) {
+      int correction = within_range();
+      move_forward_correction(correction);
+
+      if (has_reached_waypoint()) {
+        stop();
+        global_state = CHALLENGE;
+      }
+    } else if (global_state = CHALLENGE) {
+      int predicted_color = colour();
+      display_color(predicted_color);
+
+      if (predicted_color == C_WHITE) {
+        stop();
+        celebrate();
+        global_state = FINISH; // Termintaes program
+      } else {
+        global_state = static_cast<Motion>(predicted_color);
+      }
+    } else if (global_state == TURN_LEFT) 
+      turn_left_time();
+
+    else if (global_state == TURN_RIGHT) 
+      turn_right_time();
+    
+    else if (global_state == U_TURN) 
+      uturn_time();  // Turn LEFT for U-turn
+
+    else if (global_state == TWO_LEFT) 
+      compound_turn_left();
+      
+    else if (global_state == TWO_RIGHT) 
+      compound_turn_right();
+
+    delay(10);
+  }
 }
