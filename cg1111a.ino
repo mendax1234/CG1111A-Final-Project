@@ -49,7 +49,7 @@ Motion global_state = FORWARD;  // Default state of motion is FORWARD
 /* Setup function */
 void setup()
 {
-  pinMode(A7, INPUT);//bottom
+  pinMode(A7, INPUT);//button
   Serial.begin(9600);
   /* Calibrate Color Sensor */
   // setBalance();
@@ -385,7 +385,7 @@ bool has_reached_waypoint() {
 /* Main function */
 void loop()
 {
-  if (analogRead(A7) < 100) {
+  if (analogRead(A7) < 100) { //Press button
     status = 1 - status;
     delay(500);
   }
@@ -443,6 +443,7 @@ void loop()
   // Serial.println(distance);
   // delay(1000);
 }
+<<<<<<< HEAD
 
 void loops()
 {
@@ -488,3 +489,5 @@ void loops()
     delay(10);
   }
 }
+=======
+>>>>>>> 09ab1f66b46979c5be603698e2af2a79a7ec7679
