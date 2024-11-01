@@ -201,6 +201,10 @@ double left_distance(){
 
 int within_range() {
   double distance = left_distance();
+  if (distance == 0.0 || distance > 15.0)
+  {
+    return 0;
+  }
   if (distance < 7) {
     return -10;
   }
