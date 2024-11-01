@@ -443,7 +443,6 @@ void loop()
   // Serial.println(distance);
   // delay(1000);
 }
-<<<<<<< HEAD
 
 void loops()
 {
@@ -489,5 +488,3 @@ void loops()
     delay(10);
   }
 }
-=======
->>>>>>> 09ab1f66b46979c5be603698e2af2a79a7ec7679
