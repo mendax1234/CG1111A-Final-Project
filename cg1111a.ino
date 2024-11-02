@@ -65,8 +65,8 @@ void setup()
 /* Navigation functions */
 /* Default motion */
 void move_forward_correction(int correction) {
-  leftMotor.run(-motorSpeed - correction);
-  rightMotor.run(motorSpeed - correction);
+  leftMotor.run(-motorSpeed + correction);
+  rightMotor.run(motorSpeed + correction);
 }
 
 void forward(int speed,int time){//more forward
@@ -207,11 +207,11 @@ int within_range() {
   }
   if (distance < 7) {
     // Too close
-    return -10;
+    return -40;
   }
   else if (distance > 13) {
     // Too far
-    return 10;
+    return 40;
   }
   // Within Range
   return 0;
