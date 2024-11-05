@@ -5,15 +5,17 @@
 /* Define constants */
 #define TURNING_TIME_MS 345 // The time to turn 90 degrees (Need to be tuned)
 #define TURN_CORRECTION_TIME_MS 50
-#define STRAIGHT_RIGHT_TIME_MS 830
-#define STRAIGHT_LEFT_TIME_MS 830
+#define STRAIGHT_RIGHT_TIME_MS 815
+#define STRAIGHT_LEFT_TIME_MS 780
+#define RIGHT_DEVIATION 23
+#define LEFT_DEVIATION 0
 #define ULTRASONIC 12
 #define LED 13
 #define SPEED_OF_SOUND 340
 #define TIMEOUT 2000
 #define LDRWait 30
 #define IRWait 30
-#define RGBWait 500
+#define RGBWait 100
 
 /* Initialisation of color-sensing constants */
 const char R = 0, G = 1, B = 2;
@@ -69,9 +71,14 @@ void move_forward_correction(int correction) {
   rightMotor.run(motorSpeed + correction);
 }
 
+void move_forward() {
+  leftMotor.run(-motorSpeed - LEFT_DEVIATION);
+  rightMotor.run(motorSpeed + RIGHT_DEVIATION);
+}
+
 void forward(int speed,int time){//more forward
-  leftMotor.run(-speed);
-  rightMotor.run(speed);
+  leftMotor.run(-speed - LEFT_DEVIATION);
+  rightMotor.run(speed + RIGHT_DEVIATION);
   delay(time); // Keep going straight for 500ms = 0.5s
   stop();
 }
@@ -119,7 +126,7 @@ void turn_right_time() {
 }
 
 void uturn_time() {
-  turn_deg(0, 180);
+  turn_deg(0, 175);
   // delay(duration);
 
   stop();
@@ -138,7 +145,7 @@ void compound_turn_left() {
   // stop();
   delay(150);
   // Second turn
-  turn_deg(0, 96);
+  turn_deg(0, 93);
   // delay(TWO_LEFT_TURN_TIME_MS);
 
   // stop();
@@ -157,7 +164,7 @@ void compound_turn_right() {
   // stop();
   delay(150);
   // Second turn
-  turn_deg(1, 96);
+  turn_deg(1, 93);
   // delay(TWO_RIGHT_TURN_TIME_MS);
   // stop();
   global_state = FORWARD;
@@ -188,11 +195,11 @@ int within_range() {
   }
   if (distance < 7) {
     // Too close
-    return -40;
+    return -60;
   }
   else if (distance > 13) {
     // Too far
-    return 40;
+    return 60;
   }
   // Within Range
   return 0;
@@ -254,19 +261,19 @@ void readColor(){
   ldr_adapter.dWrite1(HIGH);
   ldr_adapter.dWrite2(HIGH);
   delay(RGBWait);
-  colourArray[0] = getAvgReadingLDR(5);
+  colourArray[0] = getAvgReadingLDR(3);
   
   // Turn ON GREEN LED
   ldr_adapter.dWrite1(LOW);//Green
   ldr_adapter.dWrite2(HIGH);
   delay(RGBWait);
-  colourArray[1] = getAvgReadingLDR(5);
+  colourArray[1] = getAvgReadingLDR(3);
 
   // Turn ON BLUE LED
   ldr_adapter.dWrite1(HIGH);//Blue
   ldr_adapter.dWrite2(LOW);
   delay(RGBWait);
-  colourArray[2] = getAvgReadingLDR(5);
+  colourArray[2] = getAvgReadingLDR(3);
 
   delay(RGBWait);
 }
@@ -304,8 +311,8 @@ int colour(){
   if (colourArray[0]>245 && colourArray[1]>245 && colourArray[2]>245) return C_WHITE;
   if (maxColor == 2) return C_BLUE;
   if(maxColor == 1) return C_GREEN;
-  if (colourArray[1] < 160 && colourArray[2] < 160) return C_RED;
-  if (colourArray[1] < 200 || colourArray[2] < 150) return C_ORANGE;
+  if (colourArray[1] < 180 && colourArray[2] < 180) return C_RED;
+  if (colourArray[1] < 200 || colourArray[2] < 200) return C_ORANGE;
   return C_PINK;
 }
 
@@ -372,6 +379,11 @@ bool has_reached_waypoint() {
   return sensor_state == S1_IN_S2_IN;
 }
 
+void tune_constants()
+{
+  forward(motorSpeed, 5000);
+}
+
 void loop()
 {
   if (analogRead(A7) < 100) {
@@ -381,7 +393,8 @@ void loop()
   if (status == 1){
     if (global_state == FORWARD) {
       int correction = within_range();
-      move_forward_correction(correction);
+      if (correction == 0) move_forward();
+      else move_forward_correction(correction);
       display_color(C_WHITE);
       if (has_reached_waypoint()) {
         stop();
