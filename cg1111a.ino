@@ -32,8 +32,8 @@ int status = 0;
 uint8_t motorSpeed = 220;
 float colourArray[] = { 0, 0, 0 };
 float whiteArray[] = { 0, 0, 0};
-float blackArray[] = { 604, 897, 506 };
-float greyDiff[] = { 275, 96, 380 };
+float blackArray[] = { 549, 827, 638 };
+float greyDiff[] = { 354, 164, 319 };
 // Interpolation Table for IR
 const int numValues = 9;
 double xValues[10] = { 720, 685, 655, 620, 590, 580, 550, 537, 500 }; // Analog output for IR
@@ -287,9 +287,13 @@ int colour(){
   readColor();
   delay(RGBWait);
   // Map the color measured within range
+  
   for (int c = 0; c <= 2; c++) {
     colourArray[c] = (colourArray[c] - blackArray[c]) / greyDiff[c] * 255;
+    Serial.print(colourArray[c]);
+    Serial.print(" ");
   }
+  Serial.println();
   // for(int i=0;i<3;i+=1){ 
   //   Serial.print(colourArray[i]);
   //   Serial.print(" ");
@@ -297,10 +301,10 @@ int colour(){
   // Serial.println();
   // Detect color
   int maxColor = maxx();
-  if (colourArray[0]>235 && colourArray[1]>235 && colourArray[2]>235) return C_WHITE;
+  if (colourArray[0]>245 && colourArray[1]>245 && colourArray[2]>245) return C_WHITE;
   if (maxColor == 2) return C_BLUE;
   if(maxColor == 1) return C_GREEN;
-  if (colourArray[1] < 130 && colourArray[2] < 130) return C_RED;
+  if (colourArray[1] < 160 && colourArray[2] < 160) return C_RED;
   if (colourArray[1] < 200 || colourArray[2] < 150) return C_ORANGE;
   return C_PINK;
 }
@@ -368,69 +372,6 @@ bool has_reached_waypoint() {
   return sensor_state == S1_IN_S2_IN;
 }
 
-/* Main function */
-/*
-void loop()
-{
-  if (analogRead(A7) < 100) { //Press button
-    status = 1 - status;
-    delay(500);
-  }
-  if (status==1){
-    int col = colour();
-    //Serial.println(col);
-    //delay(1000);
-    double left_dis = left_distance();
-    if (left_dis < 7) {
-      turn(1, 10); //if leftdistance smaller than 10cm, turn right 10 degrees
-    } else if(left_dis>13) { 
-      turn(0, 5);
-    }
-    int sensorState = lineFinder.readSensors();
-    Serial.println(sensorState);
-    if (sensorState != 3) {//if detect black, stop and detect colour
-      stop();
-      int col = colour();
-      // int col = identifyColour();
-      if (col == C_RED) {
-        turn(0,90);
-      } else if (col == C_GREEN) {
-        turn(1,90);
-      } else if (col == C_ORANGE) {
-        turn(1,180);
-      } else if (col == C_PINK) {
-        turn(0,90);
-        forward(motorSpeed,650);
-        delay(500);
-        turn(0,90);
-      } else if (col == C_WHITE) {
-        celebrate();
-        return 0;
-      } else {
-        // Blue
-        turn(1,93);
-        forward(motorSpeed,650);
-        delay(500);
-        turn(1,90);
-      }
-      delay(100);
-      forward(motorSpeed,1000);
-    }
-    forward(motorSpeed,100);
-  }
-  /*Serial.println("put colout");
-  delay(3000);
-  int col=colour();
-  Serial.println(col);
-  delay(1000);*/
-
-  // IR Reading
-  // int ir_reading = getAvgReadingIR(5);
-  // double distance = getDistanceIR((float)ir_reading);
-  // Serial.print("Distance: ");
-  // Serial.println(distance);
-  // delay(1000);
-  
 void loop()
 {
   if (analogRead(A7) < 100) {
@@ -438,9 +379,6 @@ void loop()
     delay(500);
   }
   if (status == 1){
-    int co = colour();
-    delay(1000);
-    /*
     if (global_state == FORWARD) {
       int correction = within_range();
       move_forward_correction(correction);
@@ -466,6 +404,5 @@ void loop()
     else if (global_state == TWO_LEFT) compound_turn_left();
     else if (global_state == TWO_RIGHT) compound_turn_right();
     delay(10);
-    */
   }
 }
