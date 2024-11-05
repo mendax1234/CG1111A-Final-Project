@@ -3,10 +3,10 @@
 #include "InterpolationLib.h"
 
 /* Define constants */
-#define TURNING_TIME_MS 330 // The time to turn 90 degrees (Need to be tuned)
+#define TURNING_TIME_MS 417 // The time to turn 90 degrees (Need to be tuned)
 #define TURN_CORRECTION_TIME_MS 50
-#define STRAIGHT_RIGHT_TIME_MS 975
-#define STRAIGHT_LEFT_TIME_MS 1050
+#define STRAIGHT_RIGHT_TIME_MS 985
+#define STRAIGHT_LEFT_TIME_MS 980
 #define ULTRASONIC 12
 #define LED 13
 #define SPEED_OF_SOUND 340
@@ -114,7 +114,7 @@ void turn_deg(int side, int angle) {
 /* Specific turn actions based on color detected */
 void turn_left_time() {
   // Move forward slightly before turning left to align closer to the wall
-  forward(motorSpeed, TURN_CORRECTION_TIME_MS);
+  //forward(motorSpeed, TURN_CORRECTION_TIME_MS);
   // delay(TURN_CORRECTION_TIME_MS);  
   
   turn_deg(0, 90);
@@ -126,7 +126,7 @@ void turn_left_time() {
 
 void turn_right_time() {
   // Move forward slightly before turning right to align closer to the wall
-  forward(motorSpeed, TURN_CORRECTION_TIME_MS);
+  // forward(motorSpeed, TURN_CORRECTION_TIME_MS);
   // delay(TURN_CORRECTION_TIME_MS);  
 
   turn_deg(1, 90);
@@ -147,16 +147,19 @@ void uturn_time() {
 void compound_turn_left() {
   // First turn
   turn_deg(0, 90);
+  delay(RGBWait);
+
   // delay(TWO_LEFT_TURN_TIME_MS); // purposely tuned to under-turn when turning left for compound to align to more closely to the wall on side of ultrasonic 
 
   // Move forward
   // stop();
   forward(motorSpeed, STRAIGHT_LEFT_TIME_MS);
+  delay(RGBWait);
   // delay(STRAIGHT_LEFT_TIME_MS);
   // stop();
 
   // Second turn
-  turn_deg(0, 90);
+  turn_deg(0, 95);
   // delay(TWO_LEFT_TURN_TIME_MS);
 
   // stop();
@@ -166,11 +169,13 @@ void compound_turn_left() {
 void compound_turn_right() {
   // First turn
   turn_deg(1, 90);
+  delay(RGBWait);
   // delay(TWO_RIGHT_TURN_TIME_MS); // purposely tuned to under-turn when turning right for compound to align to more closely to the wall on side of ultrasonic
 
   // Move forward
   // stop();
   forward(motorSpeed, STRAIGHT_RIGHT_TIME_MS);
+  delay(RGBWait);
   // delay(STRAIGHT_RIGHT_TIME_MS);
   // stop();
   
@@ -386,11 +391,32 @@ void display_color(int c) {
 bool has_reached_waypoint() {
   /* Check if mBot line sensor has detected black line on the floor */
   int sensor_state = lineFinder.readSensors();
+  Serial.print("Sensor State:");
+  Serial.println(sensor_state);
+  Serial.print("Target State:");
+  Serial.println(S1_IN_S2_IN);
   return sensor_state == S1_IN_S2_IN;
 }
 
+/* Tune Constatnts */
+void tune_constants(){
+  /* Turn Left */
+  //turn_deg(0, 90);
+  //Serial.print("90 deg Time Constant: ");
+  //Serial.println(TURNING_TIME_MS);
+  /* Turn Right */
+  //turn_deg(1, 90);
+  //Serial.print("90 deg Time Constant: ");
+  //Serial.println(TURNING_TIME_MS);
+  //turn_left_time();
+  //turn_right_time();
+  //uturn_time();
+  //compound_turn_left();
+  //compound_turn_right();
+}
+
 /* Main function */
-void loop()
+void loops()
 {
   if (analogRead(A7) < 100) { //Press button
     status = 1 - status;
@@ -451,7 +477,7 @@ void loop()
   // delay(1000);
 }
 
-void loops()
+void loop()
 {
   if (analogRead(A7) < 100) {
     status = 1 - status;
@@ -466,7 +492,7 @@ void loops()
         stop();
         global_state = CHALLENGE;
       }
-    } else if (global_state = CHALLENGE) {
+    } else if (global_state == CHALLENGE) {
       int predicted_color = colour();
       display_color(predicted_color);
 
@@ -492,6 +518,10 @@ void loops()
     else if (global_state == TWO_RIGHT) 
       compound_turn_right();
 
-    delay(10);
-  }
+    delay(10); 
+    //tune_constants();
+    //delay(15000);
+
+  } 
+  
 }
