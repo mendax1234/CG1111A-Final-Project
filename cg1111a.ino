@@ -437,13 +437,11 @@ void loop()
     status = 1 - status;
     delay(500);
   }
-  if (status == 1){
-    int co = colour();
-    delay(1000);
-    /*
+  if (status == 1){    
     if (global_state == FORWARD) {
       int correction = within_range();
       move_forward_correction(correction);
+      display_color(C_WHITE);
       if (has_reached_waypoint()) {
         stop();
         global_state = CHALLENGE;
@@ -466,6 +464,6 @@ void loop()
     else if (global_state == TWO_LEFT) compound_turn_left();
     else if (global_state == TWO_RIGHT) compound_turn_right();
     delay(10);
-    */
+    
   }
 }
