@@ -2,21 +2,6 @@
 
 #define IRWait 30
 
-MePort ir_adapter(PORT_3);
-MePort ldr_adapter(PORT_4);
-
-int getAvgReadingIR(int times){
-  int reading;
-  int total = 0;
-  for (int i = 0; i < times; i++) {
-    reading = ir_adapter.aRead2();
-    total = reading + total;
-    delay(IRWait);
-  }
-  return total / times;
-}
-
-
 int ir_read() {
   ldr_adapter.dWrite1(HIGH);
   ldr_adapter.dWrite2(LOW);
