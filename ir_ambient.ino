@@ -37,10 +37,10 @@ int ir_read() {
 
 }
 
-void setup() {
+void setup_for_ir() {
   Serial.begin(9600);
 }
 
-void loop() {
+void loop_for_ir() {
   ir_read();
 }
