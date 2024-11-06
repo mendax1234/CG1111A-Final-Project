@@ -197,7 +197,7 @@ int within_range() {
     // Too close
     return -60;
   }
-  else if (distance > 13) {
+  if (distance > 13) {
     // Too far
     return 60;
   }
@@ -396,11 +396,11 @@ void loop()
       if (correction == 0) move_forward();
       else move_forward_correction(correction);
       display_color(C_WHITE);
-      if (has_reached_waypoint()) {
+      /*if (has_reached_waypoint()) {
         stop();
         global_state = CHALLENGE;
-      }
-    } else if (global_state == CHALLENGE) {
+      }*/
+    } /*else if (global_state == CHALLENGE) {
       int predicted_color = colour();
       display_color(predicted_color);
 
@@ -416,7 +416,7 @@ void loop()
     else if (global_state == TURN_RIGHT) turn_right_time();
     else if (global_state == U_TURN) uturn_time();  // Turn LEFT for U-turn
     else if (global_state == TWO_LEFT) compound_turn_left();
-    else if (global_state == TWO_RIGHT) compound_turn_right();
+    else if (global_state == TWO_RIGHT) compound_turn_right();*/
     delay(10);
   }
 }
