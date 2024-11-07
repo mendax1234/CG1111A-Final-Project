@@ -25,7 +25,7 @@ double left_distance(){
 
 /* Color Sensor - Setup */
 #define RGBWait 100
-#define LDRWait 10
+#define LDRWait 30
 
 void Balance(int type){
   // 0: For White, 1: Black
@@ -104,19 +104,19 @@ void readColor(){
   ldr_adapter.dWrite1(HIGH);
   ldr_adapter.dWrite2(HIGH);
   delay(RGBWait);
-  colourArray[0] = getAvgReadingLDR(5);
+  colourArray[0] = getAvgReadingLDR(3);
   
   // Turn ON GREEN LED
   ldr_adapter.dWrite1(LOW);//Green
   ldr_adapter.dWrite2(HIGH);
   delay(RGBWait);
-  colourArray[1] = getAvgReadingLDR(5);
+  colourArray[1] = getAvgReadingLDR(3);
 
   // Turn ON BLUE LED
   ldr_adapter.dWrite1(HIGH);//Blue
   ldr_adapter.dWrite2(LOW);
   delay(RGBWait);
-  colourArray[2] = getAvgReadingLDR(5);
+  colourArray[2] = getAvgReadingLDR(3);
 
   delay(RGBWait);
 }
@@ -151,16 +151,16 @@ int ir_read_ambient() {
   delay(IRWait);
 
   int ambient = ir_adapter.aRead2();
-   Serial.print("ambient: ");
-   Serial.println(ambient);
+  Serial.print("ambient: ");
+  Serial.println(ambient);
   ldr_adapter.dWrite1(LOW);
   ldr_adapter.dWrite2(LOW);
   delay(IRWait);
   int reading = ir_adapter.aRead2();
-   Serial.print("reading: ");
-   Serial.println(reading);
-   Serial.print("difference: ");
-   Serial.println(ambient - reading);
+  Serial.print("reading: ");
+  Serial.println(reading);
+  Serial.print("difference: ");
+  Serial.println(ambient - reading);
   int difference = ambient - reading;
 }
 
@@ -168,5 +168,17 @@ int ir_read_ambient() {
 bool has_reached_waypoint() {
   /* Check if mBot line sensor has detected black line on the floor */
   int sensor_state = lineFinder.readSensors();
-  return sensor_state == S1_IN_S2_IN;
+  if (sensor_state != S1_OUT_S2_OUT)
+  {
+    if (sensor_state == S1_IN_S2_OUT)
+    {
+      turn_deg(0, 20);
+    }
+    else if (sensor_state == S1_OUT_S2_IN)
+    {
+      turn_deg(1, 20);
+    }
+    return true;
+  }
+  return false;
 }

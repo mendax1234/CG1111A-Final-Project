@@ -3,9 +3,9 @@
 #include "InterpolationLib.h"
 
 /* Hard-coded values for navigation */
-#define TURNING_TIME_MS 345
+#define TURNING_TIME_MS 337
 #define TURN_CORRECTION_TIME_MS 50
-#define STRAIGHT_RIGHT_TIME_MS 815
+#define STRAIGHT_RIGHT_TIME_MS 780
 #define STRAIGHT_LEFT_TIME_MS 780
 #define RIGHT_DEVIATION 23
 #define LEFT_DEVIATION 0
@@ -26,8 +26,10 @@ MePort ldr_adapter(PORT_4);
 const char R = 0, G = 1, B = 2;
 float colourArray[] = { 0, 0, 0 };
 float whiteArray[] = { 0, 0, 0};
-float blackArray[] = { 549, 827, 638 };
-float greyDiff[] = { 354, 164, 319 };
+float blackArray[] = { 708, 905, 763 };
+float greyDiff[] = { 235, 95, 205 };
+int colorStep = 0;             // Controls the color transition externally
+float transitionProgress = 0.0; // Tracks transition progress between colors
 
 enum Color {  
   C_BLUE, C_GREEN, C_RED, C_ORANGE, C_PINK, C_WHITE
@@ -64,7 +66,12 @@ void loop()
       int correction = within_range();
       if (correction == 0) move_forward();
       else move_forward_correction(correction);
-      display_color(C_WHITE);
+      //display_color(C_WHITE);
+      display_color_over_time_step(0);
+      // Increment colorStep after each transition is completed
+      if (transitionProgress == 0.0) {
+        colorStep++;
+      }
       if (has_reached_waypoint()) {
         stop();
         global_state = CHALLENGE;

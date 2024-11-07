@@ -9,6 +9,7 @@ uint8_t motorSpeed = 220;
 void move_forward_correction(int correction) {
   leftMotor.run(-motorSpeed + correction);
   rightMotor.run(motorSpeed + correction);
+  Serial.println("Correction!");
 }
 
 void move_forward() {
@@ -50,7 +51,7 @@ int within_range() {
     // No wall
     return 0;
   }
-  if (distance < 7) {
+  if (distance < 10) {
     // Too close
     return -60;
   }
@@ -84,7 +85,13 @@ void turn_right_time() {
 }
 
 void uturn_time() {
-  turn_deg(0, 175);
+  double distance = left_distance();
+  if (distance > 0 && distance < 7)
+  {
+    // Too close to left
+    turn_deg(1, 190);
+  }
+  turn_deg(0, 170);
   // delay(duration);
 
   stop();
@@ -103,7 +110,7 @@ void compound_turn_left() {
   // stop();
   delay(150);
   // Second turn
-  turn_deg(0, 93);
+  turn_deg(0, 87);
   // delay(TWO_LEFT_TURN_TIME_MS);
 
   // stop();
@@ -122,7 +129,7 @@ void compound_turn_right() {
   // stop();
   delay(150);
   // Second turn
-  turn_deg(1, 93);
+  turn_deg(1, 87);
   // delay(TWO_RIGHT_TURN_TIME_MS);
   // stop();
   global_state = FORWARD;

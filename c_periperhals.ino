@@ -17,6 +17,52 @@ void display_color(int c) {
   RGBled.show();  // Show colours on-board arduino
 }
 
+/* Smooth color transition over time */
+void display_color_over_time_step(int delayStep) {
+  int ledColors[12][3] = {
+    {0, 0, 255},       // BLUE
+    {0, 255, 0},       // GREEN
+    {255, 0, 0},       // RED
+    {255, 100, 0},     // ORANGE
+    {200, 0, 200},     // PINK
+    {255, 255, 255},   // WHITE
+    {255, 255, 0},     // YELLOW
+    {0, 255, 255},     // CYAN
+    {75, 0, 130},      // INDIGO
+    {148, 0, 211},     // VIOLET
+    {255, 20, 147},    // DEEP PINK
+    {173, 216, 230}    // LIGHT BLUE
+  };
+
+  int colorCount = sizeof(ledColors) / sizeof(ledColors[0]);
+
+  // Determine the current and next colors based on colorStep
+  int currentColorIndex = colorStep % colorCount;
+  int nextColorIndex = (currentColorIndex + 1) % colorCount;
+
+  int *currentColor = ledColors[currentColorIndex];
+  int *nextColor = ledColors[nextColorIndex];
+
+  // Interpolate between the current color and the next color
+  int r = currentColor[0] + transitionProgress * (nextColor[0] - currentColor[0]);
+  int g = currentColor[1] + transitionProgress * (nextColor[1] - currentColor[1]);
+  int b = currentColor[2] + transitionProgress * (nextColor[2] - currentColor[2]);
+
+  RGBled.setColor(r, g, b);
+  RGBled.show();
+
+  // Update transition progress
+  transitionProgress += 0.01;
+  if (transitionProgress >= 1.0) {
+    // Reset transition progress and let main loop handle colorStep increment
+    transitionProgress = 0.0;
+  }
+
+  delay(delayStep);
+}
+
+
+
 /* Buzzer note definitions */
 #define NOTE_B0  31
 #define NOTE_C1  33
