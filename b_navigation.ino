@@ -53,11 +53,11 @@ int within_range() {
   }
   if (distance < 10) {
     // Too close
-    return -60;
+    return -CORRECTION_SPEED;
   }
   if (distance > 13) {
     // Too far
-    return 60;
+    return CORRECTION_SPEED;
   }
   // Within Range
   return 0;

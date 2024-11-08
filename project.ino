@@ -7,8 +7,9 @@
 #define TURN_CORRECTION_TIME_MS 50
 #define STRAIGHT_RIGHT_TIME_MS 780
 #define STRAIGHT_LEFT_TIME_MS 780
-#define RIGHT_DEVIATION 23
+#define RIGHT_DEVIATION 0
 #define LEFT_DEVIATION 0
+#define CORRECTION_SPEED 60
 
 #define LED 13
 int status = 0;
@@ -28,8 +29,6 @@ float colourArray[] = { 0, 0, 0 };
 float whiteArray[] = { 0, 0, 0};
 float blackArray[] = { 708, 905, 763 };
 float greyDiff[] = { 235, 95, 205 };
-int colorStep = 0;             // Controls the color transition externally
-float transitionProgress = 0.0; // Tracks transition progress between colors
 
 enum Color {  
   C_BLUE, C_GREEN, C_RED, C_ORANGE, C_PINK, C_WHITE
@@ -66,12 +65,7 @@ void loop()
       int correction = within_range();
       if (correction == 0) move_forward();
       else move_forward_correction(correction);
-      //display_color(C_WHITE);
-      display_color_over_time_step(0);
-      // Increment colorStep after each transition is completed
-      if (transitionProgress == 0.0) {
-        colorStep++;
-      }
+      display_color(C_WHITE);
       if (has_reached_waypoint()) {
         stop();
         global_state = CHALLENGE;
@@ -91,7 +85,7 @@ void loop()
     } 
     else if (global_state == TURN_LEFT) turn_left_time();
     else if (global_state == TURN_RIGHT) turn_right_time();
-    else if (global_state == U_TURN) uturn_time();  // Turn LEFT for U-turn
+    else if (global_state == U_TURN) uturn_time();
     else if (global_state == TWO_LEFT) compound_turn_left();
     else if (global_state == TWO_RIGHT) compound_turn_right();
     delay(10);

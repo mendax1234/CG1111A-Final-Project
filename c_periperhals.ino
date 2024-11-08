@@ -17,52 +17,6 @@ void display_color(int c) {
   RGBled.show();  // Show colours on-board arduino
 }
 
-/* Smooth color transition over time */
-void display_color_over_time_step(int delayStep) {
-  int ledColors[12][3] = {
-    {0, 0, 255},       // BLUE
-    {0, 255, 0},       // GREEN
-    {255, 0, 0},       // RED
-    {255, 100, 0},     // ORANGE
-    {200, 0, 200},     // PINK
-    {255, 255, 255},   // WHITE
-    {255, 255, 0},     // YELLOW
-    {0, 255, 255},     // CYAN
-    {75, 0, 130},      // INDIGO
-    {148, 0, 211},     // VIOLET
-    {255, 20, 147},    // DEEP PINK
-    {173, 216, 230}    // LIGHT BLUE
-  };
-
-  int colorCount = sizeof(ledColors) / sizeof(ledColors[0]);
-
-  // Determine the current and next colors based on colorStep
-  int currentColorIndex = colorStep % colorCount;
-  int nextColorIndex = (currentColorIndex + 1) % colorCount;
-
-  int *currentColor = ledColors[currentColorIndex];
-  int *nextColor = ledColors[nextColorIndex];
-
-  // Interpolate between the current color and the next color
-  int r = currentColor[0] + transitionProgress * (nextColor[0] - currentColor[0]);
-  int g = currentColor[1] + transitionProgress * (nextColor[1] - currentColor[1]);
-  int b = currentColor[2] + transitionProgress * (nextColor[2] - currentColor[2]);
-
-  RGBled.setColor(r, g, b);
-  RGBled.show();
-
-  // Update transition progress
-  transitionProgress += 0.01;
-  if (transitionProgress >= 1.0) {
-    // Reset transition progress and let main loop handle colorStep increment
-    transitionProgress = 0.0;
-  }
-
-  delay(delayStep);
-}
-
-
-
 /* Buzzer note definitions */
 #define NOTE_B0  31
 #define NOTE_C1  33
@@ -155,51 +109,92 @@ void display_color_over_time_step(int delayStep) {
 #define NOTE_DS8 4978
 #define REST      0
 
-void celebrate() {
-  /* Nokia */
-  buzzer.tone(NOTE_E5, 100);
-  buzzer.tone(NOTE_D5, 100);
-  buzzer.tone(NOTE_FS4, 200);
-  buzzer.tone(NOTE_GS4, 200);
-  buzzer.tone(NOTE_CS5, 100);
-  buzzer.tone(NOTE_B4, 100);
-  buzzer.tone(NOTE_D4, 200);
-  buzzer.tone(NOTE_E4, 200);
-  buzzer.tone(NOTE_B4, 100);
-  buzzer.tone(NOTE_A4, 100);
-  buzzer.tone(NOTE_CS4, 200);
-  buzzer.tone(NOTE_E4, 200);
-  buzzer.tone(NOTE_A4, 1000);
+// Define colors for FINISH
+int ledColorsBuzzer[10][3] = {
+  {0, 0, 255},    // BLUE
+  {0, 255, 0},    // GREEN
+  {255, 0, 0},    // RED
+  {255, 100, 0},  // ORANGE
+  {200, 0, 200},  // PINK
+  {255, 255, 255},// WHITE
+  {0, 255, 255},  // CYAN
+  {255, 0, 255},  // PURPLE
+  {255, 255, 0},  // YELLOW
+  {128, 0, 128}   // VIOLET
+};
+int colorIndex = 0;  // Color index for cycling colors
 
-  /* MARIO GAME OVER */
-  buzzer.tone(NOTE_B4, 200);
-  buzzer.tone(NOTE_F5, 300);
-  buzzer.tone(NOTE_F5, 200);
-  buzzer.tone(NOTE_F5, 200);
-  buzzer.tone(NOTE_E5, 200);
-  buzzer.tone(NOTE_D5, 200);
-  buzzer.tone(NOTE_C5, 200);
-  buzzer.tone(NOTE_G4, 100);
-  buzzer.tone(NOTE_E4, 200);
-  buzzer.tone(NOTE_C2, 500);
-  buzzer.tone(REST, 2000);
+// Interpolate and gradually change colors
+void smoothColorTransition(int startColor[], int endColor[], uint32_t duration) {
+  const int steps = 50;  // Number of steps for a smooth transition
+  for (int i = 0; i <= steps; i++) {
+    int r = startColor[0] + (endColor[0] - startColor[0]) * i / steps;
+    int g = startColor[1] + (endColor[1] - startColor[1]) * i / steps;
+    int b = startColor[2] + (endColor[2] - startColor[2]) * i / steps;
+    RGBled.setColor(r, g, b);
+    RGBled.show();
+    delay(duration / steps);
+  }
+}
 
-  buzzer.tone(NOTE_C5, 200);
-  buzzer.tone(REST, 200);
-  buzzer.tone(NOTE_G4, 200);
-  buzzer.tone(REST, 100);
-  buzzer.tone(NOTE_E4, 200);
-  buzzer.tone(REST, 100);
+void playNokiaMelody() {
+  playNoteWithColor(NOTE_E5, 100); 
+  playNoteWithColor(NOTE_D5, 100); 
+  playNoteWithColor(NOTE_FS4, 200); 
+  playNoteWithColor(NOTE_GS4, 200); 
+  playNoteWithColor(NOTE_CS5, 100); 
+  playNoteWithColor(NOTE_B4, 100); 
+  playNoteWithColor(NOTE_D4, 200); 
+  playNoteWithColor(NOTE_E4, 200); 
+  playNoteWithColor(NOTE_B4, 100); 
+  playNoteWithColor(NOTE_A4, 100); 
+  playNoteWithColor(NOTE_CS4, 200); 
+  playNoteWithColor(NOTE_E4, 200); 
+  playNoteWithColor(NOTE_A4, 1000); 
+}
 
-  buzzer.tone(NOTE_A4, 300);
-  buzzer.tone(NOTE_B4, 300);
-  buzzer.tone(NOTE_A4, 300);
-  buzzer.tone(NOTE_GS4, 400);
-  buzzer.tone(NOTE_AS4, 400);
-  buzzer.tone(NOTE_G4, 400);
-  buzzer.tone(NOTE_G4, 200);
-  buzzer.tone(NOTE_D4, 200);
-  buzzer.tone(NOTE_E4, 400);
-
+void playMarioGameOver() {
+  playNoteWithColor(NOTE_B4, 200); 
+  playNoteWithColor(NOTE_F5, 300); 
+  playNoteWithColor(NOTE_F5, 200); 
+  playNoteWithColor(NOTE_F5, 200); 
+  playNoteWithColor(NOTE_E5, 200); 
+  playNoteWithColor(NOTE_D5, 200); 
+  playNoteWithColor(NOTE_C5, 200); 
+  playNoteWithColor(NOTE_G4, 100); 
+  playNoteWithColor(NOTE_E4, 200); 
+  playNoteWithColor(NOTE_C2, 500); 
+  playNoteWithColor(REST, 2000); 
+  playNoteWithColor(NOTE_C5, 200); 
+  playNoteWithColor(REST, 200); 
+  playNoteWithColor(NOTE_G4, 200); 
+  playNoteWithColor(REST, 100); 
+  playNoteWithColor(NOTE_E4, 200); 
+  playNoteWithColor(REST, 100); 
+  playNoteWithColor(NOTE_A4, 300); 
+  playNoteWithColor(NOTE_B4, 300); 
+  playNoteWithColor(NOTE_A4, 300); 
+  playNoteWithColor(NOTE_GS4, 400); 
+  playNoteWithColor(NOTE_AS4, 400); 
+  playNoteWithColor(NOTE_G4, 400); 
+  playNoteWithColor(NOTE_G4, 200); 
+  playNoteWithColor(NOTE_D4, 200); 
+  playNoteWithColor(NOTE_E4, 400); 
   buzzer.noTone();
+}
+
+void playNoteWithColor(uint16_t note, uint32_t duration) {
+  int nextColorIndex = (colorIndex + 1) % 10;
+  int *currentColor = ledColorsBuzzer[colorIndex];
+  int *nextColor = ledColorsBuzzer[nextColorIndex];
+
+  smoothColorTransition(currentColor, nextColor, duration);  // Smoothly transition LED colors
+  buzzer.tone(note, duration);  // Play the note for its duration
+
+  colorIndex = nextColorIndex;  // Update the color index
+}
+
+void celebrate() {
+  playNokiaMelody();
+  playMarioGameOver();
 }
