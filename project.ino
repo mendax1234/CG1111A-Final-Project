@@ -4,9 +4,10 @@
 
 /* Hard-coded values for navigation */
 #define TURNING_TIME_MS 337
-#define TURN_CORRECTION_TIME_MS 50
 #define STRAIGHT_RIGHT_TIME_MS 780
 #define STRAIGHT_LEFT_TIME_MS 780
+#define TWO_LEFT_TURN_TIME_MS 150
+#define TWO_RIGHT_TURN_TIME_MS 150
 #define RIGHT_DEVIATION 0
 #define LEFT_DEVIATION 0
 #define CORRECTION_SPEED 60

@@ -65,22 +65,12 @@ int within_range() {
 
 /* Specific turn actions based on color detected */
 void turn_left_time() {
-  // Move forward slightly before turning left to align closer to the wall
-  // delay(TURN_CORRECTION_TIME_MS);  
   turn_deg(0, 90);
-  //delay(duration);
-  stop();
   global_state = FORWARD;
 }
 
 void turn_right_time() {
-  // Move forward slightly before turning right to align closer to the wall
-  // delay(TURN_CORRECTION_TIME_MS);  
-
   turn_deg(1, 90);
-  //delay(duration);
-
-  // stop();
   global_state = FORWARD;
 }
 
@@ -92,45 +82,29 @@ void uturn_time() {
     turn_deg(1, 190);
   }
   turn_deg(0, 170);
-  // delay(duration);
-
-  stop();
   global_state = FORWARD;
 }
 
 void compound_turn_left() {
   // First turn
   turn_deg(0, 90);
-  // delay(TWO_LEFT_TURN_TIME_MS); // purposely tuned to under-turn when turning left for compound to align to more closely to the wall on side of ultrasonic 
-  delay(150);
+  delay(TWO_LEFT_TURN_TIME_MS); // purposely tuned to under-turn when turning left for compound to align to more closely to the wall on side of ultrasonic 
   // Move forward
-  // stop();
   forward(motorSpeed, STRAIGHT_LEFT_TIME_MS);
-  // delay(STRAIGHT_LEFT_TIME_MS);
-  // stop();
-  delay(150);
+  delay(TWO_LEFT_TURN_TIME_MS);
   // Second turn
   turn_deg(0, 87);
-  // delay(TWO_LEFT_TURN_TIME_MS);
-
-  // stop();
   global_state = FORWARD;
 }
 
 void compound_turn_right() {
   // First turn
   turn_deg(1, 90);
-  // delay(TWO_RIGHT_TURN_TIME_MS); // purposely tuned to under-turn when turning right for compound to align to more closely to the wall on side of ultrasonic
-  delay(150);
+  delay(TWO_RIGHT_TURN_TIME_MS); // purposely tuned to under-turn when turning right for compound to align to more closely to the wall on side of ultrasonic
   // Move forward
-  // stop();
   forward(motorSpeed, STRAIGHT_RIGHT_TIME_MS);
-  // delay(STRAIGHT_RIGHT_TIME_MS);
-  // stop();
-  delay(150);
+  delay(TWO_RIGHT_TURN_TIME_MS);
   // Second turn
   turn_deg(1, 87);
-  // delay(TWO_RIGHT_TURN_TIME_MS);
-  // stop();
   global_state = FORWARD;
 }
