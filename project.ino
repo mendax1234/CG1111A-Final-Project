@@ -3,7 +3,7 @@
 #include "InterpolationLib.h"
 
 /* Hard-coded values for navigation */
-#define TURNING_TIME_MS 337
+#define TURNING_TIME_MS 325 //Maze 2: 337
 #define STRAIGHT_RIGHT_TIME_MS 780
 #define STRAIGHT_LEFT_TIME_MS 780
 #define TWO_LEFT_TURN_TIME_MS 150
@@ -28,8 +28,8 @@ MePort ldr_adapter(PORT_4);
 const char R = 0, G = 1, B = 2;
 float colourArray[] = { 0, 0, 0 };
 float whiteArray[] = { 0, 0, 0};
-float blackArray[] = { 708, 905, 763 };
-float greyDiff[] = { 235, 95, 205 };
+float blackArray[] = { 708, 872, 758 };
+float greyDiff[] = { 234, 120, 196 };
 
 enum Color {  
   C_BLUE, C_GREEN, C_RED, C_ORANGE, C_PINK, C_WHITE

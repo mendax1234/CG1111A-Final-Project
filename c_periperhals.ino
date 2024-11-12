@@ -133,7 +133,7 @@ void smoothColorTransition(int startColor[], int endColor[], uint32_t duration) 
     int b = startColor[2] + (endColor[2] - startColor[2]) * i / steps;
     RGBled.setColor(r, g, b);
     RGBled.show();
-    delay(duration / steps);
+    // delay(duration / steps);
   }
 }
 
