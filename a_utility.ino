@@ -9,10 +9,10 @@ int colour(){
   
   for (int c = 0; c <= 2; c++) {
     colourArray[c] = (colourArray[c] - blackArray[c]) / greyDiff[c] * 255;
-    Serial.print(colourArray[c]);
-    Serial.print(" ");
+    // Serial.print(colourArray[c]);
+    // Serial.print(" ");
   }
-  Serial.println();
+  // Serial.println();
   // for(int i=0;i<3;i+=1){ 
   //   Serial.print(colourArray[i]);
   //   Serial.print(" ");
@@ -24,6 +24,6 @@ int colour(){
   if (maxColor == 2) return C_BLUE;
   if(maxColor == 1) return C_GREEN;
   if (colourArray[1] < 180 && colourArray[2] < 180) return C_RED;
-  if (colourArray[1] < 200 || colourArray[2] < 200) return C_ORANGE;
+  if (colourArray[1] < 1 || colourArray[2] < 180) return C_ORANGE;
   return C_PINK;
 }

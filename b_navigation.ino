@@ -2,28 +2,6 @@
   b_navigation.ino: Motion for the motors, including auto line correction & complex turning algorithms to overcome compound turn and fringe left turn cases
 */
 
-/* IR correction */
-#define IRWait 30
-int ir_read() {
-  ldr_adapter.dWrite1(HIGH);
-  ldr_adapter.dWrite2(LOW);
-  delay(IRWait);
-
-  int ambient = ir_adapter.aRead1();
-  //  Serial.print("ambient: ");
-  //  Serial.println(ambient);
-  ldr_adapter.dWrite1(LOW);
-  ldr_adapter.dWrite2(LOW);
-  delay(IRWait);
-  int reading = ir_adapter.aRead1();
-  //  Serial.print("reading: ");
-  //  Serial.println(reading);
-   Serial.print("difference: ");
-   Serial.println(ambient - reading);
-  int difference = ambient - reading;
-  return difference;
-}
-
 /* Motion Constants */
 uint8_t motorSpeed = 220;
 
@@ -31,7 +9,6 @@ uint8_t motorSpeed = 220;
 void move_forward_correction(int correction) {
   leftMotor.run(-motorSpeed + correction);
   rightMotor.run(motorSpeed + correction);
-  Serial.println("Correction!");
 }
 
 void move_forward() {
@@ -70,6 +47,10 @@ void turn_deg(int side, int angle) {
 int within_range() {
   double distance = left_distance();
   int ir_diff = ir_read();
+  if (ir_diff > 600) {
+    // IR Correction
+    return CORRECTION_SPEED;
+  }
   if (distance < 0.0 || distance > 15.0) {
     // No wall
     return 0;
@@ -78,7 +59,8 @@ int within_range() {
     // Too close
     return -CORRECTION_SPEED;
   }
-  if (distance > 13 || ir_diff > 510) {
+  if (distance > 13) {
+  // if (distance > 13) {
     // Too far
     return CORRECTION_SPEED;
   }

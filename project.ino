@@ -4,8 +4,8 @@
 
 /* Hard-coded values for navigation */
 #define TURNING_TIME_MS 325 //Maze 2: 337
-#define STRAIGHT_RIGHT_TIME_MS 780
-#define STRAIGHT_LEFT_TIME_MS 780
+#define STRAIGHT_RIGHT_TIME_MS 750
+#define STRAIGHT_LEFT_TIME_MS 750
 #define TWO_LEFT_TURN_TIME_MS 150
 #define TWO_RIGHT_TURN_TIME_MS 150
 #define RIGHT_DEVIATION 0
@@ -28,8 +28,8 @@ MePort ldr_adapter(PORT_4);
 const char R = 0, G = 1, B = 2;
 float colourArray[] = { 0, 0, 0 };
 float whiteArray[] = { 0, 0, 0};
-float blackArray[] = { 708, 872, 758 };
-float greyDiff[] = { 234, 120, 196 };
+float blackArray[] = { 705, 866, 723 };
+float greyDiff[] = { 228, 122, 215 };
 
 enum Color {  
   C_BLUE, C_GREEN, C_RED, C_ORANGE, C_PINK, C_WHITE
