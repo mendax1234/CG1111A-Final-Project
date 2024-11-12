@@ -127,6 +127,33 @@ const int numValues = 9;
 double xValues[10] = { 720, 685, 655, 620, 590, 580, 550, 537, 500 }; // Analog output for IR
 double yValues[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 }; // Distance in cm
 
+
+int ir_read() {
+  ldr_adapter.dWrite1(HIGH);
+  ldr_adapter.dWrite2(LOW);
+  delay(IRWait);
+
+  int ambient = ir_adapter.aRead1();
+  //  Serial.print("ambient: ");
+  //  Serial.println(ambient);
+  ldr_adapter.dWrite1(LOW);
+  ldr_adapter.dWrite2(LOW);
+  delay(IRWait);
+  int reading = ir_adapter.aRead1();
+  //  Serial.print("reading: ");
+  //  Serial.println(reading);
+   Serial.print("difference: ");
+   Serial.println(ambient - reading);
+  int difference = ambient - reading;
+  if (difference > 650){
+    return 30;
+  }
+  //else if (difference < 600){
+    //return -30;
+  //}
+  return 0;
+}
+
 int getAvgReadingIR(int times){
   int reading;
   int total = 0;
