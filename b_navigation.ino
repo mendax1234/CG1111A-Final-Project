@@ -69,6 +69,7 @@ void turn_deg(int side, int angle) {
 /* Auto correction function */
 int within_range() {
   double distance = left_distance();
+  int ir_diff = ir_read();
   if (distance < 0.0 || distance > 15.0) {
     // No wall
     return 0;
