@@ -24,6 +24,6 @@ int colour(){
   if (maxColor == 2) return C_BLUE;
   if(maxColor == 1) return C_GREEN;
   if (colourArray[1] < 180 && colourArray[2] < 180) return C_RED;
-  if (colourArray[1] < 1 || colourArray[2] < 180) return C_ORANGE;
+  if (colourArray[1] < 180 || colourArray[2] < 180) return C_ORANGE;
   return C_PINK;
 }
