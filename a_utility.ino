@@ -23,7 +23,7 @@ int colour(){
   if (colourArray[0]>245 && colourArray[1]>245 && colourArray[2]>245) return C_WHITE;
   if (maxColor == 2) return C_BLUE;
   if(maxColor == 1) return C_GREEN;
-  if (colourArray[1] < 180 && colourArray[2] < 180) return C_RED;
-  if (colourArray[1] < 180 || colourArray[2] < 180) return C_ORANGE;
+  if (colourArray[1] < 160 && colourArray[2] < 160) return C_RED;
+  if (colourArray[1] < 160 || colourArray[2] < 160) return C_ORANGE;
   return C_PINK;
 }

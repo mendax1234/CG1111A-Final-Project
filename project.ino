@@ -26,10 +26,10 @@ MePort ldr_adapter(PORT_4);
 
 /* Initialisation of color-sensing constants */
 const char R = 0, G = 1, B = 2;
-float colourArray[] = { 0, 0, 0 };
+float colourArray[] = { 0, 0, 0 }; 
 float whiteArray[] = { 0, 0, 0};
-float blackArray[] = { 705, 866, 723 };
-float greyDiff[] = { 228, 122, 215 };
+float blackArray[] = { 709, 854, 730 };
+float greyDiff[] = { 229, 135, 215 };
 
 enum Color {  
   C_BLUE, C_GREEN, C_RED, C_ORANGE, C_PINK, C_WHITE
