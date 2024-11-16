@@ -124,7 +124,7 @@ void readColor(){
 /* IR Sensor */
 #define IRWait 5
 const int numValues = 9;
-double xValues[10] = { 720, 685, 655, 620, 590, 580, 550, 537, 500 }; // Analog output for IR
+double xValues[10] = { 814, 791, 735, 696, 643, 564, 510, 473, 479 }; // Analog output for IR
 double yValues[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 }; // Distance in cm
 
 int ir_read() {
@@ -133,16 +133,10 @@ int ir_read() {
   delay(IRWait);
 
   int ambient = ir_adapter.aRead1();
-  //  Serial.print("ambient: ");
-  //  Serial.println(ambient);
   ldr_adapter.dWrite1(LOW);
   ldr_adapter.dWrite2(LOW);
   delay(IRWait);
   int reading = ir_adapter.aRead1();
-  //  Serial.print("reading: ");
-  //  Serial.println(reading);
-  //Serial.print("difference: ");
-  //Serial.println(ambient - reading);
   int difference = ambient - reading;
   return difference;
 }
@@ -173,10 +167,12 @@ bool has_reached_waypoint() {
   {
     if (sensor_state == S1_IN_S2_OUT)
     {
+      // Turn left a bit
       turn_deg(0, 20);
     }
     else if (sensor_state == S1_OUT_S2_IN)
     {
+      // Turn right a bit
       turn_deg(1, 20);
     }
     return true;

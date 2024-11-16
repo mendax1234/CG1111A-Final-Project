@@ -47,7 +47,7 @@ void turn_deg(int side, int angle) {
 int within_range() {
   double distance = left_distance();
   int ir_diff = ir_read();
-  if (ir_diff > 600) {
+  if (ir_diff > IR_TOO_CLOSE) {
     // IR Correction
     return CORRECTION_SPEED;
   }

@@ -11,6 +11,7 @@
 #define RIGHT_DEVIATION 0
 #define LEFT_DEVIATION 0
 #define CORRECTION_SPEED 60
+#define IR_TOO_CLOSE 600
 
 #define LED 13
 int status = 0;
@@ -44,13 +45,6 @@ void setup()
 {
   pinMode(A7, INPUT);//button
   Serial.begin(9600);
-  /* Calibrate Color Sensor */
-  // setBalance();
-  // for(int i=0;i<3;i+=1){
-  //   Serial.print(greyDiff[i]);
-  //   Serial.print(" ");
-  //   Serial.println(blackArray[i]);
-  // }
   // Setup mBot LED
   RGBled.setpin(LED);
 }
