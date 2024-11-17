@@ -81,7 +81,7 @@ int getAvgReadingLDR(int times){
   int reading;
   int total =0;
   for (int i = 0; i < times; i++){
-    reading = ir_adapter.aRead1();
+    reading = ir_adapter.aRead2();
     total = reading + total;
     delay(LDRWait);
   }
