@@ -60,7 +60,6 @@ int within_range() {
     return -CORRECTION_SPEED;
   }
   if (distance > 13) {
-  // if (distance > 13) {
     // Too far
     return CORRECTION_SPEED;
   }
