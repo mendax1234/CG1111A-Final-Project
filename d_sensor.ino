@@ -34,9 +34,9 @@ void Balance(int type){
   ldr_adapter.dWrite2(HIGH);
   delay(RGBWait);
   if (type == 0) {
-    whiteArray[0] = getAvgReadingLDR(5);
+    whiteArray[0] = getAvgReadingLDR(3);
   } else if (type == 1) {
-    blackArray[0] = getAvgReadingLDR(5);
+    blackArray[0] = getAvgReadingLDR(3);
   }
   
   // Turn ON GREEN LED
@@ -44,9 +44,9 @@ void Balance(int type){
   ldr_adapter.dWrite2(HIGH);
   delay(RGBWait);
   if (type == 0) {
-    whiteArray[1] = getAvgReadingLDR(5);
+    whiteArray[1] = getAvgReadingLDR(3);
   } else if (type == 1) {
-    blackArray[1] = getAvgReadingLDR(5);
+    blackArray[1] = getAvgReadingLDR(3);
   }
 
   // Turn ON BLUE LED
@@ -54,9 +54,9 @@ void Balance(int type){
   ldr_adapter.dWrite2(LOW);
   delay(RGBWait);
   if (type == 0) {
-    whiteArray[2] = getAvgReadingLDR(5);
+    whiteArray[2] = getAvgReadingLDR(3);
   } else if(type == 1) {
-    blackArray[2] = getAvgReadingLDR(5);
+    blackArray[2] = getAvgReadingLDR(3);
   }
   delay(RGBWait);
 }
